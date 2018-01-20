@@ -1,0 +1,100 @@
+spring:
+  #redis服务器相关配置
+  redis:
+      sentinel:
+        master: mymaster
+        nodes: 172.20.10.192:26379,172.20.10.193:26379
+      host: 172.20.10.189
+      password:
+      port: 6379
+      pool:
+        min-idle: 20
+        max-idle: 20
+        max-active: 100
+        max-wait: -1
+      timeout: 1000
+      #通过@Cacheable代理的缓存默认失效时间(单位：秒)
+      cacheableDefaultExpSec: 12000
+
+  datasource:
+    dialect: mysql
+    url: 'jdbc:mysql://172.20.10.66:3306/test?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&tinyInt1isBit=false'
+    username: 'devsql'
+    password: '1qaz123.com'
+    driver-class-name: 'com.mysql.jdbc.Driver'
+    type: com.alibaba.druid.pool.DruidDataSource
+    initialSize: 1
+    minIdle : 5
+    maxActive: 10
+    maxWait: 60000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: SELECT 'x'
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+    maxPoolPreparedStatementPerConnectionSize: 20
+    filters: stat,wall,slf4j
+    connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+    useGlobalDataSourceStat: true
+    monitorUserName: admin
+    monitorPassword: admin
+    resetEnable: false
+    allow:
+    deny:
+    exclusions:
+
+
+custom:
+  datasource:
+    dialect: mysql
+    url: 'jdbc:mysql://172.20.10.66:3306/b_shop?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&tinyInt1isBit=false'
+    username: 'devsql'
+    password: '1qaz123.com'
+    driver-class-name: 'com.mysql.jdbc.Driver'
+    type: com.alibaba.druid.pool.DruidDataSource
+    initialSize: 1
+    minIdle : 5
+    maxActive: 10
+    maxWait: 60000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: SELECT 'x'
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+    maxPoolPreparedStatementPerConnectionSize: 20
+    filters: stat,wall,slf4j
+    connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+    useGlobalDataSourceStat: true
+    monitorUserName: admin
+    monitorPassword: admin
+    resetEnable: false
+    allow:
+    deny:
+    exclusions:
+
+mybatis:
+  mapperLocations: classpath:mappers/**/*.xml
+  typeAliasesPackage: com.jk51.model
+  configuration:
+      callSettersOnNulls: true
+
+
+#配置日志
+logging:
+  config : classpath:logback-boot.xml
+
+
+schedule:
+  enabled: true
+  #是否覆盖原有的任务
+  overwrite : true
+  #延时启动的秒数
+  startupDelay: 0
+  prefix: jks
+  threadCount: 100
+  defaultServerAddr: http://service-test.51jk.com
+  agentUrl: /schedule/agent_service
