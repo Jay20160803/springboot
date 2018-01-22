@@ -35,7 +35,6 @@ import java.util.Objects;
  */
 
 @Configuration
-@Component
 @EnableCaching
 @EnableRedisHttpSession
 public class RedisConfiguration {
@@ -63,10 +62,10 @@ public class RedisConfiguration {
     }
 
     @Bean
-    public RedisTemplate redisTemplate(RedisConnectionFactory factory){
+    public RedisTemplate redisTemplate(){
 
         RedisTemplate template = new RedisTemplate();
-        template.setConnectionFactory(factory);
+        template.setConnectionFactory(redisConnectionFactory());
         setSerializer(template);
         return template;
 

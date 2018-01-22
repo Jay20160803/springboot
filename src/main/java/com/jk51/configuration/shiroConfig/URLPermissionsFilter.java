@@ -1,16 +1,19 @@
 package com.jk51.configuration.shiroConfig;
 
 
+import com.jk51.module.shiro.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authz.PermissionsAuthorizationFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * 版权所有(C) 2017 上海银路投资管理有限公司
@@ -20,6 +23,9 @@ import java.io.IOException;
  * 修改记录:
  */
 public class URLPermissionsFilter extends PermissionsAuthorizationFilter{
+
+    @Autowired
+    private UserService userService;
 
     @Override
     public boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue)
@@ -37,7 +43,8 @@ public class URLPermissionsFilter extends PermissionsAuthorizationFilter{
         }
 
 
-
+        List<String> urls = userService.findPermissionUrl(subject.getPrincipal().toString());
+        return urls.contains(curUri);
 
     }
 

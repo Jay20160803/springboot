@@ -6,29 +6,4 @@
 <mapper namespace="com.jk51.module.shiro.mapper.UserMapper">
 
 
-    <resultMap id="baseResultMap" type="com.jk51.module.shiro.model.User">
-        <id column="id" property="id" jdbcType="INTEGER"/>
-        <result column="username" property="userName" jdbcType="VARCHAR"/>
-        <result column="password" property="password" jdbcType="VARCHAR" />
-        <collection property="roleList" ofType="com.jk51.module.shiro.model.Role" javaType="java.util.List">
-            <id column="r_id" property="id" jdbcType="INTEGER"/>
-            <result column="rolename" property="roleName" jdbcType="VARCHAR"/>
-            <collection property="permissionList" ofType="com.jk51.module.shiro.model.Permission" javaType="java.util.List">
-                <id column="p_id" property="id" jdbcType="INTEGER"/>
-                <result column="permissionname" property="permissionname" />
-            </collection>
-        </collection>
-    </resultMap>
-    <select id="findUserByName" resultMap="baseResultMap">
-        SELECT u.id,u.username ,u.password,r.id r_id,r.rolename,p.id p_id,p.permissionname
-        FROM
-          t_user u LEFT JOIN t_user_role ur on u.id = ur.user_id
-          LEFT JOIN t_role r on ur.role_id = r.id
-          LEFT JOIN t_permission p on r.id = p.role_id
-
-         WHERE
-          u.username = #{userName}
-    </select>
-
-
 </mapper>

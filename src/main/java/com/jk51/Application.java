@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @SpringBootApplication
-/*@ComponentScan(basePackages = "com.jk51")*/
+@ComponentScan(basePackages = "com.jk51")
 public class Application {
 
 

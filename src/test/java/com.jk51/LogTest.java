@@ -1,7 +1,7 @@
 package com.jk51;
 
 import com.jk51.module.shiro.mapper.UserMapper;
-import com.jk51.module.shiro.model.User;
+import com.jk51.module.shiro.model.UserInfo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -23,16 +23,16 @@ public class LogTest {
 
     private Logger logger = LoggerFactory.getLogger(LogTest.class);
 
-    @Autowired
+  /*  @Autowired
     private UserMapper userMapper;
 
     @Test
     public void test(){
 
-       User user = userMapper.findUserByName("tom");
-        user.getId();
+       UserInfo userInfo = userMapper.findUserByName("tom");
+        userInfo.getId();
     }
-
+*/
 
 
 }

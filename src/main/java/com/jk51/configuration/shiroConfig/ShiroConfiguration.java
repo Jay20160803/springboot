@@ -1,15 +1,29 @@
 package com.jk51.configuration.shiroConfig;
 
-import com.jk51.module.shiro.realm.ShiroRealm;
-import org.apache.shiro.mgt.DefaultSecurityManager;
+import com.jk51.configuration.cacheConfig.RedisConfiguration;
 import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
+import org.apache.shiro.web.filter.authc.AnonymousFilter;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
-import org.springframework.cache.CacheManager;
+import org.apache.shiro.web.session.mgt.ServletContainerSessionManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.filter.DelegatingFilterProxy;
 
+import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -21,12 +35,27 @@ import java.util.Map;
  * 修改记录:
  */
 @Configuration
-@Component
-public class ShiroConfiguration {
+@Import(RedisConfiguration.class)
+public class ShiroConfiguration implements ApplicationContextAware {
 
 
+    private static final Logger logger = LoggerFactory.getLogger(ShiroConfiguration.class);
+    private ApplicationContext applicationContext;
 
+    /**
+     * FilterRegistrationBean
+     *
+     * */
+    @Bean
+    public FilterRegistrationBean filterRegistrationBean(){
 
+        FilterRegistrationBean filterRegistration = new FilterRegistrationBean();
+        filterRegistration.setFilter(new DelegatingFilterProxy("shiroFilter"));
+        filterRegistration.setEnabled(true);
+        filterRegistration.addUrlPatterns("/*");
+        filterRegistration.setDispatcherTypes(DispatcherType.REQUEST);
+        return filterRegistration;
+    }
 
 
 
@@ -35,32 +64,34 @@ public class ShiroConfiguration {
 
         System.out.println("ShiroConfiguration.shirFilter()");
 
-        ShiroFilterFactoryBean factoryBean = new ShiroFilterFactoryBean();
-        factoryBean.setSecurityManager(securityManager);
+        ShiroFilterFactoryBean bean = new ShiroFilterFactoryBean();
+        bean.setSecurityManager(securityManager);
 
         // 如果不设置默认会自动寻找Web工程根目录下的"/login.jsp"页面
-        factoryBean.setLoginUrl("/login");
+        bean.setLoginUrl("/login");
 
         //设置没有权限时显示的页面
-        factoryBean.setUnauthorizedUrl("/unauthor");
+        bean.setUnauthorizedUrl("/unauthor");
 
         //拦截器.
-        Map<String,String> filterChainDefinitionMap = new LinkedHashMap<String,String>();
-        // 配置不会被拦截的链接 顺序判断
-        filterChainDefinitionMap.put("/static/**", "anon");
-        //配置退出 过滤器,其中的具体的退出代码Shiro已经替我们实现了
-        filterChainDefinitionMap.put("/logout", "logout");
-        //<!-- 过滤链定义，从上向下顺序执行，一般将/**放在最为下边 -->:这是一个坑呢，一不小心代码就不好使了;
-        //<!-- authc:所有url都必须认证通过才可以访问; anon:所有url都都可以匿名访问-->
-        filterChainDefinitionMap.put("/**", "authc");
+        Map<String,Filter> filters = new LinkedHashMap();
+        filters.put("perms",urlPermissionsFilter());
+        filters.put("anon", new AnonymousFilter());
+        bean.setFilters(filters);
 
-        // 登录成功后要跳转的链接
-        factoryBean.setSuccessUrl("/index");
 
-        //未授权界面;
-        factoryBean.setUnauthorizedUrl("/403");
-        factoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
-        return factoryBean;
+        Map<String,String> chains = new LinkedHashMap();
+        chains.put("/druid/**", "anon");
+        chains.put("/login", "anon");
+        chains.put("/unauthor", "anon");
+        chains.put("/logout", "logout");
+        chains.put("/base/**", "anon");
+        chains.put("/css/**", "anon");
+        chains.put("/layer/**", "anon");
+        chains.put("/**", "authc,perms");
+        bean.setFilterChainDefinitionMap(chains);
+
+        return bean;
 
     }
 
@@ -71,14 +102,68 @@ public class ShiroConfiguration {
     @Bean
     public SecurityManager securityManager(ShiroRealm shiroRealm){
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
+        // 数据库认证的实现
         securityManager.setRealm(shiroRealm);
+        // session 管理器
+        securityManager.setSessionManager(sessionManager());
+        // 缓存管理器
+        securityManager.setCacheManager(redisCacheManager());
         return securityManager;
     }
 
 
+    /**
+     * DefaultWebSessionManager
+     *
+     * @return
+     */
+    @Bean
+    public ServletContainerSessionManager sessionManager(){
+        ServletContainerSessionManager sessionManager = new ServletContainerSessionManager();
+        return sessionManager;
+    }
+
+    /**
+     * @see ShiroRealm--->AuthorizingRealm
+     * @return
+     */
     @Bean
     public ShiroRealm shiroRealm(){
-        return   new ShiroRealm();
+        ShiroRealm shiroRealm = new ShiroRealm();
+        shiroRealm.setCacheManager(redisCacheManager());
+        shiroRealm.setCachingEnabled(true);
+        shiroRealm.setAuthenticationCachingEnabled(false); //禁止认证缓存
+        shiroRealm.setAuthorizationCachingEnabled(true);
+        return shiroRealm;
 
+    }
+
+    @Bean
+    public URLPermissionsFilter urlPermissionsFilter() {
+        return new URLPermissionsFilter();
+    }
+
+
+
+    @Bean(name = "shrioRedisCacheManager")
+    public ShiroRedisCacheManager redisCacheManager() {
+
+        RedisTemplate redisTemplate = (RedisTemplate) applicationContext.getBean("redisTemplate");
+        ShiroRedisCacheManager cacheManager = new ShiroRedisCacheManager(redisTemplate);
+        cacheManager.createCache("shiro_redis:");
+        return cacheManager;
+    }
+
+
+
+    @Bean
+    public LifecycleBeanPostProcessor lifecycleBeanPostProcessor() {
+        return new LifecycleBeanPostProcessor();
+    }
+
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }

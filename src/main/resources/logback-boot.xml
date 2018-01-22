@@ -97,7 +97,80 @@
     </springProfile>
 
 
+    <!-- 生产 -->
+    <springProfile name="prd">
+        <appender name="r-debug" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <!-- Support multiple-JVM writing to the same log file -->
+            <prudent>true</prudent>
+            <file>${log_root}/${project_name}.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>${prd_log_path}/%d{yyyyMMdd/HH}.debug</fileNamePattern>
+                <MaxHistory>${log_debug_max}</MaxHistory>
+            </rollingPolicy>
 
+            <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                <level>INFO</level>
+                <onMatch>DENY</onMatch>
+                <onMismatch>NEUTRAL</onMismatch>
+            </filter>
+            <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                <level>WARN</level>
+                <onMatch>DENY</onMatch>
+                <onMismatch>NEUTRAL</onMismatch>
+            </filter>
+            <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                <level>ERROR</level>
+                <onMatch>DENY</onMatch>
+                <onMismatch>NEUTRAL</onMismatch>
+            </filter>
+            <layout class="ch.qos.logback.classic.PatternLayout">
+                <pattern>${PATTERN}</pattern>
+            </layout>
+        </appender>
+        <appender name="r-info" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <!-- Support multiple-JVM writing to the same log file -->
+            <prudent>true</prudent>
+            <file>${log_root}/${project_name}.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>${prd_log_path}/%d{yyyyMMdd/HH}.info</fileNamePattern>
+                <MaxHistory>${log_info_max}</MaxHistory>
+            </rollingPolicy>
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>INFO</level>
+            </filter>
+            <layout class="ch.qos.logback.classic.PatternLayout">
+                <pattern>${PATTERN}</pattern>
+            </layout>
+        </appender>
+        <appender name="r-error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <!-- Support multiple-JVM writing to the same log file -->
+            <prudent>true</prudent>
+            <file>${log_root}/${project_name}.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>${prd_log_path}/error-%d{yyyyMM}.log</fileNamePattern>
+                <MaxHistory>${log_error_max}</MaxHistory>
+            </rollingPolicy>
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>ERROR</level>
+            </filter>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>${prd_log_path}/error-%d{yyyy-MM-dd}.log</fileNamePattern>
+                <MaxHistory>100</MaxHistory>
+            </rollingPolicy>
+            <layout class="ch.qos.logback.classic.PatternLayout">
+                <pattern>${PATTERN}</pattern>
+            </layout>
+        </appender>
+
+        <logger name="com.jk51.persistence" level="debug"/>
+        <logger name="org.thymeleaf" level="warn"/>
+        <logger name="com.jk51.persistence" level="debug"/>
+        <root level="info">
+            <appender-ref ref="r-debug"/>
+            <appender-ref ref="r-info"/>
+            <appender-ref ref="r-error"/>
+        </root>
+    </springProfile>
 
 
 
