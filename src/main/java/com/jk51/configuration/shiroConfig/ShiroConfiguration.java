@@ -82,8 +82,15 @@ public class ShiroConfiguration implements ApplicationContextAware {
 
         Map<String,String> chains = new LinkedHashMap();
         chains.put("/druid/**", "anon");
+        chains.put("/health", "anon");
         chains.put("/login", "anon");
         chains.put("/unauthor", "anon");
+        chains.put("/autoconfig", "anon");
+        chains.put("/beans", "anon");
+        chains.put("/configprops", "anon");
+        chains.put("/evn", "anon");
+        chains.put("/mappings", "anon");
+        chains.put("/info", "anon");
         chains.put("/logout", "logout");
         chains.put("/base/**", "anon");
         chains.put("/css/**", "anon");

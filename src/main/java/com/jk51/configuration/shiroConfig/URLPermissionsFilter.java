@@ -37,7 +37,16 @@ public class URLPermissionsFilter extends PermissionsAuthorizationFilter{
 
         if(subject.getPrincipal()==null || StringUtils.endsWithAny(curUri,".js",".css",".html")
                 ||StringUtils.endsWithAny(curUri,".jpg",".png",".gif",".jpeg")
-                ||StringUtils.equals(curUri,"/unauthor")){
+                ||StringUtils.equals(curUri,"/unauthor")
+                ||StringUtils.equals(curUri,"/health")
+                ||StringUtils.equals(curUri,"/autoconfig")
+                ||StringUtils.equals(curUri,"/beans")
+                ||StringUtils.equals(curUri,"/configprops")
+                ||StringUtils.equals(curUri,"/evn")
+                ||StringUtils.equals(curUri,"/mappings")
+                ||StringUtils.equals(curUri,"/info")
+                ||StringUtils.equals(curUri,"/login")
+                ||StringUtils.equals(curUri,"/logout")){
 
             return true;
         }
